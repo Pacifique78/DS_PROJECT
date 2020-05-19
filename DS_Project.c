@@ -1,10 +1,14 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<ctype.h>
+#include<conio.h>
+#include<string.h>
+#include<stdbool.h>
 
 struct employee{
     char name[255];
-    int totalReceipt, totalTips, numberOfCustomers;
+    char password[10];
+    float totalReceipt, totalTips, numberOfOrders;
     struct employee *next;
 }* employees = NULL;
 struct call{
@@ -32,8 +36,17 @@ struct bill{
     int tableNo;
     char *desc;
     int totalAmount;
+    bool isPaid;
     struct bill *next;
 }* bills;
+struct myBill{
+    int billId;
+    int tableNo;
+    char *desc;
+    int amount;
+    bool isPaid;
+    struct myBill *next;
+}* myBills;
 void init(){
     struct employee* employees = NULL;
     struct call* calls = NULL;
@@ -58,51 +71,227 @@ int callId = 0;
 int orderId = 0;
 int billId = 0;
 int totalAmount = 0;
+char empName[255] = "";
 
-main(){
-    printf("Welcome to XYZ Restaurant\n");
+customerMenu(){
+    printf("\nOur customers our priority\n");
     printf("Choose one of the following\n");
     char c;
-    init();
     do{
-        printf("\n1.Press a call\n2.Receive a call\n3.Register a command\n4.Display orders\n5.Finish the command\n6.View ready commands\n7.Deliver order\n8.Search a specific employee\n9.Print all employees\n10.View pending orders\np.Print Bill\n0.Exit\nMake a choice: ");
+        printf("\n1.Press a call\n2.View my bill\n0.Exit\nMake a choice: ");
         scanf("%s", &c);
         switch(c){
             case '1':
                 pressCall();
                 break;
             case '2':
-                receiveCall();
+                printBill();
+                break;
+            case '0':
+                printf("Thank for being with us, hope you will come back again...\n");
+                break;
+            default:
+                printf("You made a wrong choice!!! Please try again\n");
+                break;
+        }
+    }while(c!= '0');
+}
+managerMenu(){
+    char password[10];
+    printf("Enter your password here: ");
+    int i;
+    i=0;
+    do{
+        password[i] = getch();
+        if(password[i]!='\r'){
+            printf("*");
+        }
+        i++;
+    }while(password[i - 1] != '\r');
+    printf("\n");
+    password[i - 1] = '\0';
+    if(strcmp(password, "admin1234") != 0){
+        printf("Wrong password, please try again...\n");
+        return;
+    }
+    printf("\nWelcome back Manager\n");
+    printf("Choose one of the following\n");
+    char c;
+    do{
+        printf("\n1.Register an employee\n2.Remove an employee\n3.Search employee\n4.Display orders\n5.Display employees\n6.Print a bill for a given customer\n7.Print a list of all bills\n0.Exit\nMake a choice: ");
+        scanf("%s", &c);
+        switch(c){
+            case '1':
+                addEmployee();
+                break;
+            case '2':
+                removeEmployee();
                 break;
             case '3':
-                registerCommand();
+                searchEmployee();
                 break;
             case '4':
                 displayOrders();
                 break;
             case '5':
-                finishCommand();
-                break;
-            case '6':
-                viewReadyCommands();
-                break;
-            case '7':
-                deliver();
-                break;
-            case '8':
-                searchEmployee();
-                break;
-            case '9':
                 displayEmployees();
                 break;
-            case '10':
-                viewPending();
-                break;
-            case 'p':
+            case '6':
                 printBill();
                 break;
+            case '7':
+                allBill();
+                break;
+            case '0':
+                printf("Thank you....\n");
+                break;
             default:
-                printf("You made a wrong choice!!!!\n");
+                printf("You made a wrong choice!!! Please try again\n");
+                break;
+        }
+    }while(c!= '0');
+}
+waiterMenu(){
+    char name[255], password[10];
+    printf("Enter your name here: ");
+    scanf("%s", name);
+    printf("Enter your password here: ");
+    int i;
+    i=0;
+    do{
+        password[i] = getch();
+        if(password[i]!='\r'){
+            printf("*");
+        }
+        i++;
+    }while(password[i - 1] != '\r');
+    printf("\n");
+    password[i - 1] = '\0';
+    struct employee *emp;
+    emp = employees;
+    if(employees == NULL){
+        printf("Incorrect username/password\n");
+        return;
+    }
+    while(strcmp(emp->name, name) !=0 || strcmp(emp->password, password) != 0){
+        if(emp->next == NULL){
+            printf("Incorrect username/password\n");
+            return;
+        }
+        emp = emp->next;
+    }
+    strcpy(empName, name);
+    printf("\nWelcome back %s\n", empName);
+    printf("Choose one of the following\n");
+    char c;
+    do{
+        printf("\n1.Receive a call\n2.Register a command\n3.Display orders\n4.Deliver an order\n5.Print a bill for a given customer\n6.Receive Payment\n0.Exit\nMake a choice: ");
+        scanf("%s", &c);
+        switch(c){
+            case '1':
+                receiveCall();
+                break;
+            case '2':
+                registerCommand();
+                break;
+            case '3':
+                displayOrders();
+                break;
+            case '4':
+                deliver();
+                break;
+            case '5':
+                printBill();
+                break;
+            case '6':
+                receivePayment();
+                break;
+            case '0':
+                printf("Thank you....\n");
+                break;
+            default:
+                printf("You made a wrong choice!!! Please try again\n");
+                break;
+        }
+    }while(c!= '0');
+}
+cookerMenu(){char name[255], password[10];
+    printf("Enter your name here: ");
+    scanf("%s", name);
+    printf("Enter your password here: ");
+    int i;
+    i=0;
+    do{
+        password[i] = getch();
+        if(password[i]!='\r'){
+            printf("*");
+        }
+        i++;
+    }while(password[i - 1] != '\r');
+    printf("\n");
+    password[i - 1] = '\0';
+    struct employee *emp;
+    emp = employees;
+    if(employees == NULL){
+        printf("Incorrect username/password\n");
+        return;
+    }
+    while(strcmp(emp->name, name) !=0 || strcmp(emp->password, password) != 0){
+        if(emp->next == NULL){
+            printf("Incorrect username/password\n");
+            return;
+        }
+        emp = emp->next;
+    }
+    strcpy(empName, name);
+    printf("\nWelcome back %s\n", empName);
+    printf("Choose one of the following\n");
+    char c;
+    do{
+        printf("\n1.Display orders\n2.Notify ready commands\n0.Exit\nMake a choice: ");
+        scanf("%s", &c);
+        switch(c){
+            case '1':
+                displayOrders();
+                break;
+            case '2':
+                finishCommand();
+                break;
+            case '0':
+                printf("Thank you....\n");
+                break;
+            default:
+                printf("You made a wrong choice!!! Please try again\n");
+                break;
+        }
+    }while(c!= '0');
+}
+main(){
+    printf("\nWelcome to XYZ Restaurant\n");
+    char c;
+    init();
+    printf("Enter as:");
+    do{
+        printf("\n1.Customer\n2.Manager\n3.Waiter/Waitress\n4.Cooker\n0.Exit\nMake a choice: ");
+        scanf("%s", &c);
+        switch(c){
+            case '1':
+                customerMenu();
+                break;
+            case '2':
+                managerMenu();
+                break;
+            case '3':
+                waiterMenu();
+                break;
+            case '4':
+                cookerMenu();
+                break;
+            case '0':
+                printf("......Bye Bye.....\n");
+                break;
+            default:
+                printf("You made a wrong choice!!! Please try again...");
                 break;
         }
     }while(c!= '0');
@@ -156,6 +345,10 @@ registerCommand(){
     char choice;
     int cid;
     do{
+        if(calls == NULL){
+            printf("There is no new calls");
+            return;
+        }
         printf("Enter the call Id to register: ");
         scanf("%d", &cid);
         struct call *cal;
@@ -317,11 +510,13 @@ deliver(){
     if(drinksOrders != NULL){
         q = drinksOrders->next;
         if(drinksOrders->orderId == orId){
+            found++;
             if(drinksOrders->status == "ready"){
                 b->billId = billId + 1;
                 billId = billId + 1;
                 b->tableNo = drinksOrders->tableNo;
                 b->desc = drinksOrders->desc;
+                b->isPaid = false;
                 printf("Enter the amount for this order: ");
                 scanf("%d", &b->totalAmount);
                 if(bills == NULL){
@@ -338,6 +533,10 @@ deliver(){
                 printf("Order successfully delivered.\n");
                 return;
             }
+            else{
+                printf("The order you are trying to deliver is not yet ready.\n");
+                return;
+            }
         }
         else{
             while(q != NULL){
@@ -348,6 +547,7 @@ deliver(){
                         billId = billId + 1;
                         b->tableNo = q->tableNo;
                         b->desc = q->desc;
+                        b->isPaid = false;
                         printf("Enter the amount for this order: ");
                         scanf("%d", &b->totalAmount);
                         if(bills == NULL){
@@ -376,11 +576,13 @@ deliver(){
         p = foodsOrders->next;
         if(found == 0){
             if(foodsOrders->orderId == orId){
+                found++;
                 if(foodsOrders->status == "ready"){
                     b->billId = billId + 1;
                     billId = billId + 1;
                     b->tableNo = foodsOrders->tableNo;
                     b->desc = foodsOrders->desc;
+                    b->isPaid = false;
                     printf("Enter the amount for this order: ");
                     scanf("%d", &b->totalAmount);
                     if(bills == NULL){
@@ -394,7 +596,11 @@ deliver(){
                     }
                     foodsOrders = foodsOrders->next;
                     pf = NULL;
-                    printf("Order successfully delivered.");
+                    printf("Order successfully delivered.\n");
+                    return;
+                }
+                else{
+                    printf("The order you are trying to deliver is not yet ready.\n");
                     return;
                 }
             }
@@ -407,6 +613,7 @@ deliver(){
                             billId = billId + 1;
                             b->tableNo = p->tableNo;
                             b->desc = p->desc;
+                            b->isPaid = false;
                             printf("Enter the amount for this order: ");
                             scanf("%d", &b->totalAmount);
                             if(bills == NULL){
@@ -419,7 +626,7 @@ deliver(){
                                 bf->next = b;
                             }
                             pf->next = p->next;
-                            printf("Order successfully delivered.");
+                            printf("Order successfully delivered.\n");
                         }
                         else{
                             printf("The order you are trying to deliver is not yet ready.");
@@ -444,64 +651,204 @@ allBill(){
         printf("There is no bills at all.\n");
         return;
     }
-    printf("\nBillId\tTable No\tDescription\tAmount");
+    printf("\nBillId\tTable No\tDescription\tAmount\tPaid?");
     while(q != NULL){
-        printf("\n%d\t%d\t\t%s\t%d", q->billId, q->tableNo, q->desc, q->totalAmount);
+        printf("\n%d\t%d\t\t%s\t%d\t%s", q->billId, q->tableNo, q->desc, q->totalAmount, q->isPaid ? "YES" : "NO");
         q = q->next;
     }
     printf("\n");
 }
 printBill(){
-    allBill();
-    struct bill *q, *myBills, *temp, *myTemp;
-    temp = (struct bill*)malloc(sizeof(struct bill));
+    struct bill *q;
+    struct myBill *temp, *myTemp;
+    temp = (struct myBill*)malloc(sizeof(struct myBill));
     q = bills;
-    myBills = NULL;
+    totalAmount = 0;
+    struct myBill* myBills = NULL;
     if(bills == NULL){
         printf("There is no bill found.\n");
         return;
     }
-    int tableNo;
+    int tableno;
     printf("Enter the table number: ");
-    scanf("%d", &tableNo);
+    scanf("%d", &tableno);
     while(q != NULL){
-        if(q->tableNo == tableNo){
-                printf("%d\t%s\t%d", q->tableNo, q->desc, tableNo);
+        if(q->tableNo == tableno){
+            temp->billId = q->billId;
+            temp->tableNo = q->tableNo;
+            temp->desc = q->desc;
+            temp->amount = q->totalAmount;
+            temp->isPaid = q->isPaid;
+            totalAmount += q->totalAmount;
+            temp->next = NULL;
             if(myBills == NULL){
-                temp = q;
-                temp->next = NULL;
                 myBills = temp;
+                printf("\nBill Id\tTable No\tDescription\tAmount\tPaid?");
+                printf("\n%d\t%d\t\t%s\t%d\t%s", myBills->billId, myBills->tableNo, myBills->desc, myBills->amount, myBills->isPaid ? "YES" : "NO");
             }
             else{
                 myTemp = myBills;
-                while(myTemp != NULL)
+                while(myTemp->next != NULL)
                     myTemp = myTemp->next;
-                temp = q;
-                temp->next = NULL;
                 myTemp->next = temp;
+                printf("\n%d\t%d\t\t%s\t%d\t%s", myBills->billId, myBills->tableNo, myBills->desc, myBills->amount, myBills->isPaid ? "YES" : "NO");
             }
         }
-        q = q-> next;
+        q = q->next;
     }
-    if(myBills == NULL){
-        printf("No bill for this table.\n");
+    if(!temp->tableNo){
+        printf("there is no bill for this table.");
         return;
     }
-    printf("\nBillId\tTable No\tDescription\tAmount");
-    myTemp = myBills;
-    while(myTemp != NULL){
-        printf("\n%d\t%d\t\t%s\t%d", myTemp->billId, myTemp->tableNo, myTemp->desc, myTemp->totalAmount);
-        myTemp = myTemp->next;
+    printf("\nTOTAL AMOUNT TO PAY: %d RWF   ", totalAmount);
+    printf("\n");
+}
+receivePayment(){
+    int amount;
+    struct bill *q;
+    struct employee *emp;
+    if(bills == NULL){
+        printf("There is no pending payment.\n");
+        return;
+    }
+    q = bills;
+    emp = employees;
+    int orId;
+    printf("Enter the Id of the bill that is paid: ");
+    scanf("%d", &orId);
+    while(q != NULL){
+        if(q->billId == orId){
+            if(q->isPaid){
+                printf("This bill was already paid.\n");
+                return;
+            }
+            else{
+                printf("Enter the amount to pay: ");
+                scanf("%d", &amount);
+                if(amount < q->totalAmount){
+                    printf("The amount you entered is below the price to for this bill, Please try again\n");
+                    return;
+                }
+                q->isPaid = true;
+                while(strcmp(emp->name, empName) != 0)
+                    emp = emp->next;
+                emp->totalReceipt += amount;
+                emp->totalTips += (amount - q->totalAmount);
+                emp->numberOfOrders += 1;
+                printf("Payment done successfully\n");
+                return;
+            }
+        }
+        q = q->next;
+    }
+    printf("Bill with this id doesn't exist.\n");
+}
+searchEmployee(){
+    char choice, name[255];
+    struct employee  *p;
+    p = employees;
+    if(employees == NULL){
+        printf("No employees were found.\n");
+        return;
+    }
+    printf("Enter the name of the employee to search: ");
+    scanf("\n");
+    scanf("%[^\n]%*c", name);
+    while(strcmp(p->name , name) != 0){
+        if(p->next == NULL){
+            printf("The name you entered doesn't march any employee.\n");
+            return;
+        }
+        p = p->next;
+    }
+    printf("Name: %s\n", p->name);
+    printf("pass: %s\n", p->password);
+    printf("Total receipts: %f (Average: %f)\n", p->totalReceipt, p->totalReceipt/p->numberOfOrders);
+    printf("Total tips: %f (Average: %f)\n", p->totalTips, p->totalTips/p->numberOfOrders);
+}
+addEmployee(){
+    char choice;
+    int i;
+    do{
+        struct employee *p, *q;
+        p = (struct employee*)malloc(sizeof(struct employee));
+        printf("Enter the name of employee: ");
+        scanf("\n");
+        scanf("%[^\n]%*c", p->name);
+        printf("Create a password for this employee: ");
+        i=0;
+        do{
+            p->password[i] = getch();
+            if(p->password[i]!='\r'){
+                printf("*");
+            }
+            i++;
+        }while(p->password[i - 1] != '\r');
+        printf("\n");
+        p->password[i - 1] = '\0';
+        p->totalReceipt = 0;
+        p->totalTips = 0;
+        p->numberOfOrders = 0;
+        p->next = NULL;
+        if(employees == NULL){
+            employees = p;
+            printf("\nEmployee successfully registered.\n");
+        }
+        else{
+            q = employees;
+            while(q->next != NULL)
+                q = q->next;
+            q->next = p;
+            printf("Employee successfully registered.\n");
+        }
+        printf("\nPress (Y) to add another employee or press another key to exit: ");
+        scanf("%s", &choice);
+    }while(toupper(choice) == 'Y');
+}
+displayEmployees(){
+    struct employee *q;
+    q = employees;
+    if(employees == NULL){
+        printf("NO Employee found.\n");
+        return;
+    }
+    printf("========================================\n");
+    while(q != NULL){
+        printf("Name: %s\n", q->name);
+        printf("pass: %s\n", q->password);
+        printf("Total receipts: %f (Average: %f)\n", q->totalReceipt, q->totalReceipt/q->numberOfOrders);
+        printf("Total tips: %f (Average: %f)\n", q->totalTips, q->totalTips/q->numberOfOrders);
+        printf("========================================\n");
+        q = q->next;
     }
     printf("\n");
 }
-searchEmployee(){
-
-}
-displayEmployees(){
-
-}
-
-viewPending(){
-
+removeEmployee(){
+    char choice, name[255];
+    struct employee *q, *p;
+    p = employees;
+    if(employees == NULL){
+        printf("No employees were found.\n");
+        return;
+    }
+    q = employees->next;
+    printf("Enter the name of the employee to be removed: ");
+    scanf("\n");
+    scanf("%[^\n]%*c", name);
+    if(strcmp(employees->name, name) == 0){
+        employees = employees->next;
+        p = NULL;
+        printf("Employee removed.\n");
+    }
+    while(strcmp(q->name , name) != 0){
+        if(q->next == NULL){
+            printf("The name you entered doesn't march any employee.\n");
+            return;
+        }
+        q = q->next;
+        p = p->next;
+    }
+    p->next = q->next;
+    q = NULL;
+    printf("Employee removed.\n");
 }
